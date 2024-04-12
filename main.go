@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"os/exec"
+	"time"
+)
 
 func main() {
 	fmt.Println("Welcome to Go Snake!")
@@ -21,10 +26,23 @@ func main() {
 	snake[1] = []int{2, 2}
 	snake[2] = []int{2, 1}
 
-	PrintBoard(&board, &snake)
+	// Loop until game over.
+	for !IsGameOver() {
+		PrintBoard(&board, &snake)
+		// Move snake.
+		UpdateSnake(&snake)
+		// Delay.
+		time.Sleep(time.Second)
+	}
+}
+
+func IsGameOver() bool {
+	return false
 }
 
 func PrintBoard(board *[][]rune, snake *[][]int) {
+	ClearTerminal()
+
 	for i, row := range *board {
 		for j, col := range row {
 			if HasSnakePiece(i, j, snake) {
@@ -37,6 +55,12 @@ func PrintBoard(board *[][]rune, snake *[][]int) {
 	}
 }
 
+func ClearTerminal() {
+	cmd := exec.Command("clear") // Linux/macOS
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
+
 func HasSnakePiece(row int, col int, snake *[][]int) bool {
 	for _, piece := range *snake {
 		if len(piece) > 0 && piece[0] == row && piece[1] == col {
@@ -45,4 +69,23 @@ func HasSnakePiece(row int, col int, snake *[][]int) bool {
 	}
 
 	return false
+}
+
+func UpdateSnake(snake *[][]int) {
+	head := (*snake)[0]
+	oldRow := head[0]
+	oldCol := head[1]
+
+	head[1]++
+
+	for _, piece := range (*snake)[1:] {
+		if len(piece) > 0 {
+			currRow := piece[0]
+			currCol := piece[1]
+			piece[0] = oldRow
+			piece[1] = oldCol
+			oldRow = currRow
+			oldCol = currCol
+		}
+	}
 }
